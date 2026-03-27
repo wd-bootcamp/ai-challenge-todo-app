@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { nanoid } from 'nanoid';
-import { formatDate } from './utils'; // UNUSED IMPORT
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { formatDate, calculateStats } from './utils';
+import TodoDetail from './TodoDetail.jsx';
 
 export default function App() {
+  const navigate = useNavigate();
   const [todos, setTodos] = useState([
-    { id: 1, text: 'Learn React', completed: false },
-    { id: 2, text: 'Build a Todo App', completed: false },
-    { id: 3, text: 'Master Claude Code', completed: false },
+    { id: 1, text: 'Learn React', completed: false, createdAt: new Date().toISOString() },
+    { id: 2, text: 'Build a Todo App', completed: false, createdAt: new Date().toISOString() },
+    { id: 3, text: 'Master Claude Code', completed: false, createdAt: new Date().toISOString() },
   ]);
 
   const [input, setInput] = useState('');
@@ -24,6 +27,7 @@ export default function App() {
       id: nanoid(),
       text: input,
       completed: false,
+      createdAt: new Date().toISOString(),
     };
 
     setTodos([...todos, newTodo]);
@@ -45,7 +49,7 @@ export default function App() {
     console.log('Todos updated:', todos);
   }, [todos]);
 
-  return (
+  const listView = (
     <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
       <h1>My Todo List</h1>
 
@@ -77,7 +81,7 @@ export default function App() {
           // BUG: Missing key prop - React will warn
           <li key={todo.id} style={{ padding: '10px', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between' }}>
             <span
-              onClick={() => toggleComplete(todo.id)}
+              onClick={() => navigate(`/todo/${todo.id}`)}
               style={{
                 textDecoration: todo.completed ? 'line-through' : 'none',
                 cursor: 'pointer',
@@ -106,5 +110,15 @@ export default function App() {
         Total: {todos.length}
       </p>
     </div>
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={listView} />
+      <Route
+        path="/todo/:id"
+        element={<TodoDetail todos={todos} onDelete={deleteTodo} onToggle={toggleComplete} />}
+      />
+    </Routes>
   );
 }
