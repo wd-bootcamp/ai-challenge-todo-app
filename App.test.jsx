@@ -103,4 +103,59 @@ describe('App', () => {
 
     expect(screen.getByText('Total: 4')).toBeInTheDocument();
   });
+
+  it('filters todos by search query', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByPlaceholderText('Search todos...'), 'React');
+
+    expect(screen.getByText('Learn React')).toBeInTheDocument();
+    expect(screen.queryByText('Build a Todo App')).not.toBeInTheDocument();
+    expect(screen.queryByText('Master Claude Code')).not.toBeInTheDocument();
+  });
+
+  it('search is case-insensitive', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByPlaceholderText('Search todos...'), 'react');
+
+    expect(screen.getByText('Learn React')).toBeInTheDocument();
+  });
+
+  it('shows no todos when search has no match', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByPlaceholderText('Search todos...'), 'xyz');
+
+    expect(screen.getByText('No todos match your search.')).toBeInTheDocument();
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+  });
+
+  it('clears filter when search is cleared', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const searchInput = screen.getByPlaceholderText('Search todos...');
+    await user.type(searchInput, 'React');
+    expect(screen.queryByText('Build a Todo App')).not.toBeInTheDocument();
+
+    await user.clear(searchInput);
+    expect(screen.getByText('Learn React')).toBeInTheDocument();
+    expect(screen.getByText('Build a Todo App')).toBeInTheDocument();
+    expect(screen.getByText('Master Claude Code')).toBeInTheDocument();
+  });
+
+  it('total count stays unchanged while searching', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByText('Total: 3')).toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText('Search todos...'), 'React');
+
+    expect(screen.getByText('Total: 3')).toBeInTheDocument();
+  });
 });

@@ -10,7 +10,12 @@ export default function App() {
   ]);
 
   const [input, setInput] = useState('');
+  const [search, setSearch] = useState('');
   const debugVar = 'remove me'; // UNUSED VARIABLE
+
+  const filteredTodos = todos.filter(todo =>
+    todo.text.toLowerCase().includes(search.toLowerCase())
+  );
 
   const addTodo = () => {
     if (input.trim() === '') return;
@@ -44,6 +49,14 @@ export default function App() {
     <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
       <h1>My Todo List</h1>
 
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search todos..."
+        style={{ padding: '8px', width: '100%', marginBottom: '20px' }}
+      />
+
       <div style={{ marginBottom: '20px' }}>
         {/* ACCESSIBILITY: Missing label for input */}
         <input
@@ -60,7 +73,7 @@ export default function App() {
       </div>
 
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {todos.map((todo) => (
+        {filteredTodos.map((todo) => (
           // BUG: Missing key prop - React will warn
           <li key={todo.id} style={{ padding: '10px', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between' }}>
             <span
@@ -83,9 +96,9 @@ export default function App() {
         ))}
       </ul>
 
-      {todos.length === 0 && (
+      {filteredTodos.length === 0 && (
         <p style={{ textAlign: 'center', color: '#999' }}>
-          No todos yet. Add one to get started!
+          {todos.length === 0 ? 'No todos yet. Add one to get started!' : 'No todos match your search.'}
         </p>
       )}
 
