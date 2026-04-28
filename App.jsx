@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { nanoid } from 'nanoid';
-import { formatDate } from './utils'; // UNUSED IMPORT
 
 export default function App() {
   const [todos, setTodos] = useState([
@@ -10,7 +9,7 @@ export default function App() {
   ]);
 
   const [input, setInput] = useState('');
-  const debugVar = 'remove me'; // UNUSED VARIABLE
+  const [search, setSearch] = useState('');
 
   const addTodo = () => {
     if (input.trim() === '') return;
@@ -26,7 +25,6 @@ export default function App() {
   };
 
   const deleteTodo = (id) => {
-    // BUG: This doesn't actually delete the todo
     setTodos(todos.filter(todo => todo.id !== id));
   };
 
@@ -36,22 +34,24 @@ export default function App() {
     ));
   };
 
-  useEffect(() => {
-    console.log('Todos updated:', todos);
-  }, [todos]);
+  const filteredTodos = todos.filter(todo =>
+    todo.text.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
       <h1>My Todo List</h1>
 
       <div style={{ marginBottom: '20px' }}>
-        {/* ACCESSIBILITY: Missing label for input */}
+        <label htmlFor="todo-input" style={{ display: 'none' }}>New todo</label>
         <input
+          id="todo-input"
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && addTodo()}
           placeholder="Add a new todo..."
+          aria-label="New todo"
           style={{ padding: '8px', width: '100%', marginBottom: '10px' }}
         />
         <button onClick={addTodo} style={{ width: '100%', padding: '8px' }}>
@@ -59,9 +59,17 @@ export default function App() {
         </button>
       </div>
 
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search todos..."
+        aria-label="Search todos"
+        style={{ padding: '8px', width: '100%', marginBottom: '16px', boxSizing: 'border-box' }}
+      />
+
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {todos.map((todo) => (
-          // BUG: Missing key prop - React will warn
+        {filteredTodos.map((todo) => (
           <li key={todo.id} style={{ padding: '10px', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between' }}>
             <span
               onClick={() => toggleComplete(todo.id)}
@@ -86,6 +94,11 @@ export default function App() {
       {todos.length === 0 && (
         <p style={{ textAlign: 'center', color: '#999' }}>
           No todos yet. Add one to get started!
+        </p>
+      )}
+      {todos.length > 0 && filteredTodos.length === 0 && (
+        <p style={{ textAlign: 'center', color: '#999' }}>
+          No matching todos.
         </p>
       )}
 
