@@ -103,4 +103,46 @@ describe('App', () => {
 
     expect(screen.getByText('Total: 4')).toBeInTheDocument();
   });
+
+  it('filters todos by search text', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByPlaceholderText('Search todos...'), 'React');
+
+    expect(screen.getByText('Learn React')).toBeInTheDocument();
+    expect(screen.queryByText('Build a Todo App')).not.toBeInTheDocument();
+    expect(screen.queryByText('Master Claude Code')).not.toBeInTheDocument();
+  });
+
+  it('search is case-insensitive', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByPlaceholderText('Search todos...'), 'REACT');
+
+    expect(screen.getByText('Learn React')).toBeInTheDocument();
+  });
+
+  it('shows all todos when search is cleared', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const searchInput = screen.getByPlaceholderText('Search todos...');
+    await user.type(searchInput, 'React');
+    await user.clear(searchInput);
+
+    expect(screen.getByText('Learn React')).toBeInTheDocument();
+    expect(screen.getByText('Build a Todo App')).toBeInTheDocument();
+    expect(screen.getByText('Master Claude Code')).toBeInTheDocument();
+  });
+
+  it('shows no matching message when search has no results', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByPlaceholderText('Search todos...'), 'xyznotfound');
+
+    expect(screen.getByText('No matching todos.')).toBeInTheDocument();
+  });
 });
